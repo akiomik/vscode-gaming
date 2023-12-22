@@ -27,10 +27,12 @@ export function activate(context: vscode.ExtensionContext) {
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand('vscode-gaming.start', () => {
-    const period = 10000.0;
-    const updateTime = 50;
-
     const config = vscode.workspace.getConfiguration();
+    const gamingConfig = vscode.workspace.getConfiguration('gaming');
+    const period: number = gamingConfig.period;
+    const updateTime: number = gamingConfig.updateTime;
+    const target: string = gamingConfig.target;
+
     let radr = 0.0;
     let radg = 2.0 * Math.PI / 3.0;
     let radb = 2.0 * Math.PI / (2.0 / 3.0);
@@ -39,9 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     setInterval(() => {
       const color = `#${rad2hex(radr)}${rad2hex(radg)}${rad2hex(radb)}`;
 
-      config.update('workbench.colorCustomizations', {
-        "editor.background": color,
-      }, true);
+      config.update('workbench.colorCustomizations', { [target]: color }, true);
 
       radr = mod2pi(radr + raddelta);
       radg = mod2pi(radg + raddelta);

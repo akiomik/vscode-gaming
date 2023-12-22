@@ -17,7 +17,27 @@
         "command": "vscode-gaming.start",
         "title": "Start gaming mode"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Gaming",
+      "properties": {
+        "gaming.period": {
+          "type": "number",
+          "default": 10000,
+          "description": "The colors cycle in milliseconds"
+        },
+        "gaming.updateTime": {
+          "type": "number",
+          "default": 50,
+          "description": "The updating interval in milliseconds"
+        },
+        "gaming.target": {
+          "type": "string",
+          "default": "editor.background",
+          "description": "The gaming target in `workbench.colorCustomizations` namespace"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
