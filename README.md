@@ -1,6 +1,8 @@
-# vscode-gaming README
+# vscode-gaming
 
-This is the README for your extension "vscode-gaming". After writing up a brief description, we recommend including the following sections.
+A gaming theme for visual studio code. Port of [gaming.vim](https://github.com/high-moctane/gaming.vim).
+
+https://github.com/akiomik/vscode-gaming/assets/1457682/1a4424d9-5c9c-4eac-9f5d-1028a4e443d0
 
 ## Features
 
