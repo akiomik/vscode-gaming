@@ -17,6 +17,10 @@
       {
         "command": "vscode-gaming.start",
         "title": "Start gaming mode"
+      },
+      {
+        "command": "vscode-gaming.stop",
+        "title": "Stop gaming mode"
       }
     ],
     "configuration": {
