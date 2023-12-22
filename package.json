@@ -1,7 +1,8 @@
 {
   "name": "vscode-gaming",
   "displayName": "vscode-gaming",
-  "description": "vscode gaming theme",
+  "description": "gaming theme for visual studio code",
+  "publisher": "akiomik",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
