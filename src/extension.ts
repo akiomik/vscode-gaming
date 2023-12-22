@@ -2,6 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+import { Timer } from './timer';
+
 const mod2pi = (rad: number): number => {
   if (rad >= Math.PI) {
     return rad - (2.0 * Math.PI);
@@ -38,7 +40,8 @@ export function activate(context: vscode.ExtensionContext) {
     let radb = 2.0 * Math.PI / (2.0 / 3.0);
     let raddelta = 2.0 * Math.PI / (period / updateTime);
 
-    setInterval(() => {
+    const timer = Timer.getInstance();
+    timer.start(() => {
       const color = `#${rad2hex(radr)}${rad2hex(radg)}${rad2hex(radb)}`;
 
       config.update('workbench.colorCustomizations', { [target]: color }, true);
