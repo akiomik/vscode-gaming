@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-gaming.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-gaming.start",
+        "title": "Start gaming mode"
       }
     ]
   },
