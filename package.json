@@ -2,8 +2,12 @@
   "name": "vscode-gaming",
   "displayName": "vscode-gaming",
   "description": "gaming theme for visual studio code",
+  "keywords": ["gaming", "vscode", "theme"],
+  "author": "Akiomi Kamakura <akiomik@gmail.com>",
   "publisher": "omi",
+  "homepage": "https://github.com/akiomik/vscode-gaming",
   "repository": "https://github.com/akiomik/vscode-gaming",
+  "license": "Apache-2.0",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
