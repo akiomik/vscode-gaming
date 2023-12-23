@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposableStart = vscode.commands.registerCommand('vscode-gaming.start', () => {
+	let startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => {
     const config = vscode.workspace.getConfiguration();
     const gamingConfig = vscode.workspace.getConfiguration('gaming');
     const period: number = gamingConfig.period;
@@ -52,13 +52,13 @@ export function activate(context: vscode.ExtensionContext) {
     }, updateTime);
 	});
 
-	let disposableStop = vscode.commands.registerCommand('vscode-gaming.stop', () => {
+	let stopCmd = vscode.commands.registerCommand('vscode-gaming.stop', () => {
     const timer = Timer.getInstance();
     timer.stop();
 	});
 
-	context.subscriptions.push(disposableStart);
-	context.subscriptions.push(disposableStop);
+	context.subscriptions.push(startCmd);
+	context.subscriptions.push(stopCmd);
 }
 
 // This method is called when your extension is deactivated
