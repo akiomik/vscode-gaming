@@ -3,6 +3,7 @@
   "displayName": "vscode-gaming",
   "description": "gaming theme for visual studio code",
   "publisher": "akiomik",
+  "repository": "https://github.com/akiomik/vscode-gaming",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
