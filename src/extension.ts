@@ -3,19 +3,7 @@
 import * as vscode from 'vscode';
 
 import { Timer } from './timer';
-
-const mod2pi = (rad: number): number => {
-  if (rad >= Math.PI) {
-    return rad - (2.0 * Math.PI);
-  }
-
-  return rad;
-};
-
-const rad2hex = (rad: number): string => {
-  const a= (Math.sin(rad) + 1.0) / 2.0;
-  return Math.round(a * 255).toString(16).padStart(2, '0');
-};
+import { ColorWheel } from './colorwheel';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -35,20 +23,15 @@ export function activate(context: vscode.ExtensionContext) {
     const updateTime: number = gamingConfig.updateTime;
     const target: string = gamingConfig.target;
 
-    let radr = 0.0;
-    let radg = 2.0 * Math.PI / 3.0;
-    let radb = 2.0 * Math.PI / (2.0 / 3.0);
-    let raddelta = 2.0 * Math.PI / (period / updateTime);
+    const delta = 2.0 * Math.PI / (period / updateTime);
+    let shift = delta;
 
     const timer = Timer.getInstance();
     timer.start(() => {
-      const color = `#${rad2hex(radr)}${rad2hex(radg)}${rad2hex(radb)}`;
+      const color = ColorWheel.at(shift);
+      config.update('workbench.colorCustomizations', { [target]: color.code() }, true);
 
-      config.update('workbench.colorCustomizations', { [target]: color }, true);
-
-      radr = mod2pi(radr + raddelta);
-      radg = mod2pi(radg + raddelta);
-      radb = mod2pi(radb + raddelta);
+      shift += delta;
     }, updateTime);
 	});
 
