@@ -15,7 +15,7 @@ export class Timer {
   }
 
   start(f: () => void, interval: number) {
-    if (this.isStarted()) {
+    if (this.isRunning()) {
       console.debug('already started');
       return;
     }
@@ -30,7 +30,7 @@ export class Timer {
     }
   }
 
-  isStarted(): boolean {
+  isRunning(): boolean {
     return !!this._timer;
   }
 }
