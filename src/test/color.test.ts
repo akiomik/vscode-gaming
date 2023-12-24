@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { Color } from '../color';
 
 suite('Color', () => {
-	test('constructor', () => {
+  test('constructor', () => {
     assert.deepEqual(new Color(33.3, 66.6, 99.9), new Color(33, 67, 100));
     assert.throws(() => new Color(-1, 0, 0));
     assert.throws(() => new Color(0, -1, 0));
@@ -13,7 +13,7 @@ suite('Color', () => {
     assert.throws(() => new Color(0, 0, 256));
     assert.doesNotThrow(() => new Color(0, 0, 0));
     assert.doesNotThrow(() => new Color(255, 255, 255));
-	});
+  });
 
   test('#code', () => {
     assert.strictEqual(new Color(0, 0, 0).code(), '#000000');

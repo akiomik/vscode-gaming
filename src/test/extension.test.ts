@@ -5,8 +5,12 @@ import { Timer } from '../timer';
 
 suite('Commands', () => {
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension("omi.vscode-gaming");
-    await ext!.activate();
+    const ext = vscode.extensions.getExtension('omi.vscode-gaming');
+    if (!ext) {
+      throw new Error('failed to get extension');
+    }
+
+    await ext.activate();
   });
 
   test('vscode-gaming.start', async () => {

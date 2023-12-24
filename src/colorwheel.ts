@@ -17,8 +17,8 @@ export class ColorWheel {
 
   public static at(rad: number): Color {
     const r = rad;
-    const g = (2 * Math.PI / 3) + rad;
-    const b = (2 * Math.PI / (2 / 3)) + rad;
+    const g = (2 * Math.PI) / 3 + rad;
+    const b = (2 * Math.PI) / (2 / 3) + rad;
 
     return new Color(
       ColorWheel.round1(ColorWheel.scale255(r)),
