@@ -23,7 +23,9 @@
   },
   "categories": ["Themes", "Other"],
   "activationEvents": [],
-  "sponsor": "https://github.com/sponsors/akiomik",
+  "sponsor": {
+    "url": "https://github.com/sponsors/akiomik"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
