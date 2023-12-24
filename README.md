@@ -23,3 +23,20 @@ This extension contributes the following settings:
 ### 0.0.1
 
 Initial release
+
+## Development
+
+1. Open this project with Visual Studio Code:
+
+```bash
+code .
+```
+
+2. Press `F5` to open a new window with this extension loaded.
+3. Run the command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and typing `gaming mode`.
+
+## Testing
+
+```bash
+npm test
+```
