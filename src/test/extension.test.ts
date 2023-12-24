@@ -1,15 +1,35 @@
 import * as assert from 'assert';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
 
-suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+import { Timer } from '../timer';
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
-	});
+suite('Commands', () => {
+  suiteSetup(async () => {
+    const ext = vscode.extensions.getExtension("omi.vscode-gaming");
+    await ext!.activate();
+  });
+
+  test('vscode-gaming.start', async () => {
+    const config = vscode.workspace.getConfiguration();
+    const timer = Timer.getInstance();
+    assert.deepEqual(config.get('workbench.colorCustomizations'), {});
+    assert.equal(timer.isRunning(), false);
+
+    await vscode.commands.executeCommand('vscode-gaming.start');
+
+    assert.equal(timer.isRunning(), true);
+    assert.deepEqual(config.get('workbench.colorCustomizations'), {}); // FIXME
+  });
+
+  test('vscode-gaming.stop', async () => {
+    const config = vscode.workspace.getConfiguration();
+    const timer = Timer.getInstance();
+    assert.deepEqual(config.get('workbench.colorCustomizations'), {}); // FIXME
+    assert.equal(timer.isRunning(), true);
+
+    await vscode.commands.executeCommand('vscode-gaming.stop');
+
+    assert.equal(timer.isRunning(), false);
+    assert.deepEqual(config.get('workbench.colorCustomizations'), {});
+  });
 });
