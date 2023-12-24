@@ -7,15 +7,15 @@ https://github.com/akiomik/vscode-gaming/assets/1457682/1a4424d9-5c9c-4eac-9f5d-
 
 ## Commands
 
-* `Start gaming mode`: Start gaming colorize animation
-* `Stop gaming mode`: Stop gaming colorize animation
+* `Start gaming mode`: Start animation
+* `Stop gaming mode`: Stop animation
 
 ## Extension Settings
 
 This extension contributes the following settings:
 
 * `gaming.period`: The colors cycle in milliseconds (defaults: `10000`)
-* `gaming.updateTime`: The updating interval in milliseconds (defaults: `501)
+* `gaming.updateTime`: The updating interval in milliseconds (defaults: `50`)
 * `gaming.target`: The gaming target in `workbench.colorCustomizations` namespace (defaults: `"editor.background"`)
 
 ## Release Notes
