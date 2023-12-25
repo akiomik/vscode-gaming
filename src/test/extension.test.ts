@@ -24,25 +24,27 @@ suite('Commands', () => {
 
   test('vscode-gaming.start', async () => {
     const config = vscode.workspace.getConfiguration();
-    const timer = Timer.getInstance();
+    let timer = Timer.getInstance();
     assert.deepEqual(config.get('workbench.colorCustomizations'), {});
     assert.equal(timer.isRunning(), false);
 
     await vscode.commands.executeCommand('vscode-gaming.start');
     clock.tick(100);
 
+    timer = Timer.getInstance();
     assert.equal(timer.isRunning(), true);
     // assert.deepEqual(config.get('workbench.colorCustomizations'), {});
   });
 
   test('vscode-gaming.stop', async () => {
     // const config = vscode.workspace.getConfiguration();
-    const timer = Timer.getInstance();
+    let timer = Timer.getInstance();
     // assert.deepEqual(config.get('workbench.colorCustomizations'), {});
     assert.equal(timer.isRunning(), true);
 
     await vscode.commands.executeCommand('vscode-gaming.stop');
 
+    timer = Timer.getInstance();
     assert.equal(timer.isRunning(), false);
     // assert.deepEqual(config.get('workbench.colorCustomizations'), {});
   });
