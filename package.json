@@ -33,6 +33,7 @@
   "sponsor": {
     "url": "https://github.com/sponsors/akiomik"
   },
+  "icon": "images/icon.webp",
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
