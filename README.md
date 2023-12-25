@@ -1,5 +1,8 @@
 # vscode-gaming
 
+[![Visual Studio Marketplace Version (including pre-releases)](https://img.shields.io/visual-studio-marketplace/v/omi.vscode-gaming)](https://marketplace.visualstudio.com/items?itemName=omi.vscode-gaming)
+[![Node.js Test](https://github.com/akiomik/vscode-gaming/actions/workflows/test.yml/badge.svg)](https://github.com/akiomik/vscode-gaming/actions/workflows/test.yml)
+
 ![banner](images/github-banner.png)
 
 A gaming theme for [Visual Studio Code](https://azure.microsoft.com/en-us/products/visual-studio-code).
