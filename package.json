@@ -2,7 +2,11 @@
   "name": "vscode-gaming",
   "displayName": "vscode-gaming",
   "description": "A gaming theme for Visual Studio Code",
-  "keywords": ["gaming", "vscode", "theme"],
+  "keywords": [
+    "gaming",
+    "vscode",
+    "theme"
+  ],
   "author": {
     "name": "Akiomi Kamakura",
     "email": "akiomik@gmail.com"
@@ -21,7 +25,10 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Themes", "Other"],
+  "categories": [
+    "Themes",
+    "Other"
+  ],
   "activationEvents": [],
   "sponsor": {
     "url": "https://github.com/sponsors/akiomik"
@@ -61,6 +68,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
+    "prepublish": "vsce package",
+    "publish": "vsce publish",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
@@ -70,11 +79,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
-    "@types/vscode": "^1.85.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
-    "typescript": "^5.3.3",
+    "@types/vscode": "^1.85.0",
     "@vscode/test-cli": "^0.0.4",
-    "@vscode/test-electron": "^2.3.8"
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.3.3"
   }
 }
