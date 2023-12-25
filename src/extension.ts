@@ -16,6 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
   const startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => {
+    console.log('vscode-gaming.start: start');
     const config = vscode.workspace.getConfiguration();
     const gamingConfig = vscode.workspace.getConfiguration('gaming');
     const period: number = gamingConfig.period;
@@ -25,10 +26,14 @@ export function activate(context: vscode.ExtensionContext) {
     const delta = (2.0 * Math.PI) / (period / updateTime);
     let shift = delta;
 
+    console.log('vscode-gaming.start: start timer');
     const timer = Timer.getInstance();
     timer.start(() => {
+      console.log('vscode-gaming.start: start timer function', Timer.getInstance());
       const color = ColorWheel.at(shift);
-      config.update('workbench.colorCustomizations', { [target]: color.code() }, true);
+      config.update('workbench.colorCustomizations', { [target]: color.code() }, true).then(() => {
+        console.log('vscode-gaming.start: updated config');
+      });
 
       shift += delta;
     }, updateTime);
