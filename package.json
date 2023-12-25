@@ -51,17 +51,17 @@
         "gaming.period": {
           "type": "number",
           "default": 10000,
-          "description": "The colors cycle in milliseconds"
+          "description": "The colors cycle in milliseconds (defaults: 10000)"
         },
         "gaming.updateTime": {
           "type": "number",
           "default": 50,
-          "description": "The updating interval in milliseconds"
+          "description": "The updating interval in milliseconds (defaults: 5))"
         },
         "gaming.target": {
           "type": "string",
           "default": "editor.background",
-          "description": "The gaming target in `workbench.colorCustomizations` namespace"
+          "description": "The gaming target in `workbench.colorCustomizations` namespace (defaults: \"editor.background\")"
         }
       }
     }
