@@ -11,3 +11,6 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 biome.json
 MEMO.md
+images/*.afdesign
+images/*.afdesign~lock~
+**/*.afdesign~lock~
