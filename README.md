@@ -28,9 +28,15 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.1.0
+
+* Added reset command
+* Added `gaming.targets` option instead of `gaming.target`
+* Improved color reproducibility
+
 ### 0.0.1
 
-Initial release
+* Initial release
 
 ## Development
 
