@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
     const gamingConfig = vscode.workspace.getConfiguration('gaming');
     const period: number = gamingConfig.period;
     const updateTime: number = gamingConfig.updateTime;
-    const target: string = gamingConfig.target;
+    const targets: string[] = gamingConfig.targets;
 
     const delta = (2.0 * Math.PI) / (period / updateTime);
     let shift = delta;
@@ -28,7 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
     const timer = Timer.getInstance();
     timer.start(() => {
       const color = ColorWheel.at(shift);
-      config.update('workbench.colorCustomizations', { [target]: color.code() }, true);
+      const customizations = Object.fromEntries(targets.map((target) => [target, color.code()]));
+      config.update('workbench.colorCustomizations', customizations, true);
 
       shift += delta;
     }, updateTime);

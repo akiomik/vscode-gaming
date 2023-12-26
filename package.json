@@ -59,10 +59,13 @@
           "default": 50,
           "description": "The updating interval in milliseconds (defaults: 5))"
         },
-        "gaming.target": {
-          "type": "string",
-          "default": "editor.background",
-          "description": "The gaming target in `workbench.colorCustomizations` namespace (defaults: \"editor.background\")"
+        "gaming.targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["editor.background"],
+          "description": "The gaming targets in `workbench.colorCustomizations` namespace (defaults: [\"editor.background\"])"
         }
       }
     }
