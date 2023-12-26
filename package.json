@@ -44,6 +44,10 @@
       {
         "command": "vscode-gaming.stop",
         "title": "Stop gaming mode"
+      },
+      {
+        "command": "vscode-gaming.reset",
+        "title": "Reset gaming mode"
       }
     ],
     "configuration": {

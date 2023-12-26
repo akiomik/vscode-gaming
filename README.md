@@ -16,6 +16,7 @@ https://github.com/akiomik/vscode-gaming/assets/1457682/1a4424d9-5c9c-4eac-9f5d-
 
 * `Start gaming mode`: Start gradient animation
 * `Stop gaming mode`: Stop gradient animation
+* `Reset gaming mode`: Reset color configuration
 
 ## Extension Settings
 
