@@ -8,7 +8,7 @@ suite('Timer', () => {
   let a = 0;
 
   suiteSetup(() => {
-    clock = FakeTimers.install();
+    clock = FakeTimers.install({ shouldClearNativeTimers: true });
   });
 
   suiteTeardown(() => {
