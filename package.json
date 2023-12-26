@@ -52,7 +52,7 @@
         "gaming.period": {
           "type": "number",
           "default": 10000,
-          "description": "The colors cycle in milliseconds (defaults: 10000)"
+          "description": "The gradient color cycle in milliseconds (defaults: 10000)"
         },
         "gaming.updateTime": {
           "type": "number",
@@ -65,7 +65,7 @@
             "type": "string"
           },
           "default": ["editor.background"],
-          "description": "The gaming targets in `workbench.colorCustomizations` namespace (defaults: [\"editor.background\"])"
+          "description": "The colorization targets in `workbench.colorCustomizations` namespace (defaults: [\"editor.background\"])"
         }
       }
     }
