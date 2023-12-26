@@ -24,7 +24,7 @@ This extension contributes the following settings:
 
 * `gaming.period`: The gradient color cycle in milliseconds (defaults: `10000`)
 * `gaming.updateTime`: The updating interval in milliseconds (defaults: `50`)
-* `gaming.targets`: The colorization targets in `workbench.colorCustomizations` namespace (defaults: `["editor.background"]`)
+* `gaming.targets`: The colorization targets in [`workbench.colorCustomizations` namespace](https://code.visualstudio.com/api/references/theme-color) (defaults: `["editor.background"]`)
 
 ## Release Notes
 
