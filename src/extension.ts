@@ -33,4 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(stopCmd);
 }
 
-export function deactivate() {}
+export function deactivate() {
+  const timer = Timer.getInstance();
+  timer.stop();
+}
