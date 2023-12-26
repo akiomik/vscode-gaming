@@ -1,27 +1,26 @@
 import * as vscode from 'vscode';
 
 import { ColorWheel } from './colorwheel';
+import { Config } from './config';
 import { Timer } from './timer';
 
 export function activate(context: vscode.ExtensionContext) {
   const startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => {
-    const config = vscode.workspace.getConfiguration();
-    const gamingConfig = vscode.workspace.getConfiguration('gaming');
-    const period: number = gamingConfig.period;
-    const updateTime: number = gamingConfig.updateTime;
-    const targets: string[] = gamingConfig.targets;
+    const globalConfig = vscode.workspace.getConfiguration();
+    const config = new Config();
 
-    const delta = (2.0 * Math.PI) / (period / updateTime);
+    const delta = config.delta();
     let shift = delta;
 
     const timer = Timer.getInstance();
     timer.start(() => {
       const color = ColorWheel.at(shift);
-      const customizations = Object.fromEntries(targets.map((target) => [target, color.code()]));
-      config.update('workbench.colorCustomizations', customizations, true);
+      const entries = config.targets.map((target) => [target, color.code()]);
+      const customizations = Object.fromEntries(entries);
+      globalConfig.update('workbench.colorCustomizations', customizations, true);
 
       shift += delta;
-    }, updateTime);
+    }, config.updateTime);
   });
 
   const stopCmd = vscode.commands.registerCommand('vscode-gaming.stop', () => {
