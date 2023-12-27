@@ -10,7 +10,7 @@ Port of [gaming.vim](https://github.com/high-moctane/gaming.vim).
 
 ## Features
 
-https://github.com/akiomik/vscode-gaming/assets/1457682/1a4424d9-5c9c-4eac-9f5d-1028a4e443d0
+![screenshot](images/screenshot.gif)
 
 ## Commands
 
