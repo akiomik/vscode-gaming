@@ -91,7 +91,7 @@
     "@biomejs/biome": "1.4.1",
     "@sinonjs/fake-timers": "^11.2.2",
     "@types/mocha": "^10.0.6",
-    "@types/node": "18.x",
+    "@types/node": "22.x",
     "@types/sinon": "^17.0.4",
     "@types/sinonjs__fake-timers": "^8.1.5",
     "@types/vscode": "^1.85.0",
