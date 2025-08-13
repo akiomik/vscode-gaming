@@ -68,7 +68,9 @@
           "items": {
             "type": "string"
           },
-          "default": ["editor.background"],
+          "default": [
+            "editor.background"
+          ],
           "description": "The colorization targets in `workbench.colorCustomizations` namespace (defaults: [\"editor.background\"])"
         }
       }
@@ -90,11 +92,13 @@
     "@sinonjs/fake-timers": "^11.2.2",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/sinon": "^17.0.4",
     "@types/sinonjs__fake-timers": "^8.1.5",
     "@types/vscode": "^1.85.0",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8",
     "@vscode/vsce": "^2.22.0",
+    "sinon": "^21.0.0",
     "typescript": "^5.3.3"
   }
 }
