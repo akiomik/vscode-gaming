@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
-import FakeTimers, { type InstalledClock } from '@sinonjs/fake-timers';
+import type { InstalledClock } from '@sinonjs/fake-timers';
+import * as FakeTimers from '@sinonjs/fake-timers';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
