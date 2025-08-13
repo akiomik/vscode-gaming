@@ -31,7 +31,7 @@ suite('Commands', () => {
   };
 
   suiteSetup(async () => {
-    clock = FakeTimers.install();
+    clock = FakeTimers.install({ shouldClearNativeTimers: true });
 
     const ext = vscode.extensions.getExtension('omi.vscode-gaming');
     if (!ext) {
@@ -42,6 +42,7 @@ suite('Commands', () => {
   });
 
   suiteTeardown(() => {
+    Timer.resetInstance();
     clock.uninstall();
   });
 
@@ -77,9 +78,8 @@ suite('Commands', () => {
   });
 
   teardown(() => {
-    // Stop timer to ensure clean state
-    const timer = Timer.getInstance();
-    timer.stop();
+    // Reset timer instance to ensure clean state between tests
+    Timer.resetInstance();
 
     // Restore all stubs
     configStub.restore();

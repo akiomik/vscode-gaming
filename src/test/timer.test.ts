@@ -12,7 +12,14 @@ suite('Timer', () => {
   });
 
   suiteTeardown(() => {
+    Timer.resetInstance();
     clock.uninstall();
+  });
+
+  teardown(() => {
+    Timer.resetInstance();
+
+    a = 0;
   });
 
   test('.getInstance', () => {
@@ -32,7 +39,7 @@ suite('Timer', () => {
     const timer = Timer.getInstance();
     timer.stop();
     clock.tick(1000);
-    assert.strictEqual(a, 42);
+    assert.strictEqual(a, 0);
   });
 
   test('#isRunning', () => {

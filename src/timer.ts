@@ -1,10 +1,6 @@
 export class Timer {
-  private static instance: Timer;
-  private _timer: NodeJS.Timeout | null;
-
-  private constructor() {
-    this._timer = null;
-  }
+  private static instance?: Timer;
+  private _timer?: NodeJS.Timeout;
 
   static getInstance() {
     if (!Timer.instance) {
@@ -12,6 +8,13 @@ export class Timer {
     }
 
     return Timer.instance;
+  }
+
+  static resetInstance() {
+    if (Timer.instance) {
+      Timer.instance.stop();
+      Timer.instance = undefined;
+    }
   }
 
   start(f: () => void, interval: number) {
@@ -25,7 +28,7 @@ export class Timer {
   stop() {
     if (this._timer) {
       clearInterval(this._timer);
-      this._timer = null;
+      this._timer = undefined;
     }
   }
 
