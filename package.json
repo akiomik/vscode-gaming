@@ -84,8 +84,10 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
     "test": "vscode-test",
-    "format": "biome check --apply .",
-    "lint": "biome ci ."
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci ."
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.4",
