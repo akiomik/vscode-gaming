@@ -94,11 +94,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.6",
-    "@sinonjs/fake-timers": "^11.2.2",
+    "@sinonjs/fake-timers": "^15.4.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "26.x",
     "@types/sinon": "^17.0.4",
-    "@types/sinonjs__fake-timers": "^8.1.5",
+    "@types/sinonjs__fake-timers": "^15.0.1",
     "@types/vscode": "^1.125.0",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
