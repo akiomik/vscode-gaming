@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Runs on every startup, thanks to the `onStartupFinished` activation event, and does nothing
   // unless the previous session left gaming colors behind. Not awaited: it watches the colors for
   // a moment before deciding, and the commands have to be usable meanwhile.
-  gaming.restoreInterrupted(new Config()).catch((error) => {
+  gaming.restoreInterrupted().catch((error) => {
     console.error('vscode-gaming: failed to restore the colors of an interrupted session', error);
   });
 

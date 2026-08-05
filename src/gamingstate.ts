@@ -4,16 +4,40 @@ import type { TargetSnapshot } from './targetcolors';
 
 const STATE_KEY = 'vscode-gaming.originalTargets';
 
-// The stored form of a `TargetSnapshot`. A `Map` is not JSON-serializable, and a target that was
-// absent has to survive the round trip as absent rather than as a null value, so an entry for such
-// a target simply carries no `original`.
+// What a gaming session has to put back when it ends.
+export type GamingRecord = {
+  targets: TargetSnapshot;
+
+  // The update time of the session that recorded these. Every window shares this record, so a
+  // window deciding whether anyone is still animating has to watch for a tick of the animation
+  // that is running, which need not use the `gaming.updateTime` configured for this window.
+  updateTime: number;
+};
+
+// The stored form of a `TargetSnapshot` entry. A `Map` is not JSON-serializable, and a target that
+// was absent has to survive the round trip as absent rather than as a null value, so an entry for
+// such a target simply carries no `original`.
 type StoredEntry = {
   target: string;
   original?: unknown;
 };
 
+type StoredRecord = {
+  targets: StoredEntry[];
+  updateTime: number;
+};
+
 function isStoredEntry(value: unknown): value is StoredEntry {
   return typeof value === 'object' && value !== null && typeof (value as StoredEntry).target === 'string';
+}
+
+function isStoredRecord(value: unknown): value is StoredRecord {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Array.isArray((value as StoredRecord).targets) &&
+    typeof (value as StoredRecord).updateTime === 'number'
+  );
 }
 
 // The values gaming mode has to put back, kept somewhere that outlives the extension host.
@@ -28,22 +52,39 @@ export class GamingState {
     this.memento = memento;
   }
 
-  // Entries that cannot be read back are dropped rather than throwing: a snapshot this extension
-  // no longer understands is not worth failing activation over, and the colors it describes are
-  // the ones the user can still fix by hand.
-  public load(): TargetSnapshot {
+  // Anything that cannot be read back is dropped rather than thrown: a record this extension no
+  // longer understands is not worth failing activation over, and the colors it describes are the
+  // ones the user can still fix by hand. It is reported, so that a bug here is at least traceable.
+  public load(): GamingRecord {
     const stored = this.memento.get<unknown>(STATE_KEY);
-    if (!Array.isArray(stored)) {
-      return new Map();
+    if (stored === undefined) {
+      return { targets: new Map(), updateTime: 0 };
     }
 
-    return new Map(stored.filter(isStoredEntry).map((entry) => [entry.target, entry.original]));
+    if (!isStoredRecord(stored)) {
+      console.warn('vscode-gaming: ignoring an unreadable record of the original colors', stored);
+
+      return { targets: new Map(), updateTime: 0 };
+    }
+
+    const entries = stored.targets.filter(isStoredEntry);
+    if (entries.length !== stored.targets.length) {
+      console.warn('vscode-gaming: ignoring unreadable entries in the record of the original colors', stored.targets);
+    }
+
+    return {
+      targets: new Map(entries.map((entry) => [entry.target, entry.original])),
+      updateTime: stored.updateTime,
+    };
   }
 
-  public async save(snapshot: TargetSnapshot): Promise<void> {
-    const stored: StoredEntry[] = Array.from(snapshot, ([target, original]) =>
-      original === undefined ? { target } : { target, original },
-    );
+  public async save(record: GamingRecord): Promise<void> {
+    const stored: StoredRecord = {
+      targets: Array.from(record.targets, ([target, original]) =>
+        original === undefined ? { target } : { target, original },
+      ),
+      updateTime: record.updateTime,
+    };
 
     await this.memento.update(STATE_KEY, stored);
   }

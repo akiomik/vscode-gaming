@@ -8,8 +8,8 @@ import { Timer } from './timer';
 
 const COLOR_CUSTOMIZATIONS = 'workbench.colorCustomizations';
 
-// How long `restoreInterrupted` watches the targets before deciding that nobody is animating them.
-// Long enough to catch an animation running at the default update time several times over.
+// The shortest time `restoreInterrupted` watches the targets before deciding that nobody is
+// animating them, however fast the animation that recorded them was running.
 const MIN_OBSERVATION_TIME = 1000;
 
 // `WorkspaceConfiguration` is a snapshot rather than a live view, so it is re-read on every access
@@ -45,13 +45,19 @@ export class GamingMode {
   // entries only, so customizations outside of `gaming.targets` are never touched.
   private originalTargets: TargetSnapshot;
 
+  // The update time of the session that recorded them, which is not necessarily this window's
+  private recordedUpdateTime: number;
+
   // The write started by the most recent tick. Nothing awaits a tick, so it is tracked here for a
   // restore to wait on, and its failure is reported here rather than left as an unhandled rejection.
   private pendingUpdate: Promise<void>;
 
   constructor(state: GamingState) {
+    const record = state.load();
+
     this.state = state;
-    this.originalTargets = state.load();
+    this.originalTargets = record.targets;
+    this.recordedUpdateTime = record.updateTime;
     this.pendingUpdate = Promise.resolve();
   }
 
@@ -61,7 +67,7 @@ export class GamingMode {
 
     const timer = Timer.getInstance();
     if (!timer.isRunning()) {
-      await this.record(config.targets);
+      await this.record(config.targets, config.updateTime);
     }
 
     // `config.targets` is captured here instead of being re-read on every tick, so that the targets
@@ -89,8 +95,11 @@ export class GamingMode {
   //
   // What is recorded is shared by every window, though, so it is not proof that gaming mode is
   // over: another window may be animating right now. Watch the targets for long enough to see a
-  // tick before deciding, and leave them alone if something is still changing them.
-  public async restoreInterrupted(config: Config): Promise<void> {
+  // tick of that animation before deciding, and leave them alone if something is still changing
+  // them. Two samples cannot tell a stopped animation from one that happens to be back on the same
+  // color, but the targets are watched for at least two update times, so that needs the animation
+  // to have come full circle in exactly that window.
+  public async restoreInterrupted(): Promise<void> {
     if (this.originalTargets.size === 0) {
       return;
     }
@@ -98,7 +107,7 @@ export class GamingMode {
     const targets = Array.from(this.originalTargets.keys());
     const before = readTargetColors(targets);
 
-    await delay(Math.max(MIN_OBSERVATION_TIME, config.updateTime * 2));
+    await delay(Math.max(MIN_OBSERVATION_TIME, this.recordedUpdateTime * 2));
 
     // Gaming mode was started in this window while the targets were being watched
     if (Timer.getInstance().isRunning()) {
@@ -112,17 +121,22 @@ export class GamingMode {
     await this.restore();
   }
 
-  private async record(targets: string[]): Promise<void> {
-    const recorded = TargetColors.record(this.originalTargets, getColorCustomizations(), targets);
+  private async record(targets: string[], updateTime: number): Promise<void> {
+    const stored = this.state.load();
 
-    // Recording never replaces what is already there, so a same-sized result covers the same
-    // targets and there is nothing new to store
-    if (recorded.size === this.originalTargets.size) {
-      return;
-    }
+    // Prefer what is stored over what this window has in memory: another window may have recorded
+    // the original values already, in which case what this window can see now is whatever that
+    // window's animation has written since.
+    const recorded = TargetColors.record(
+      new Map([...this.originalTargets, ...stored.targets]),
+      getColorCustomizations(),
+      targets,
+    );
 
     this.originalTargets = recorded;
-    await this.state.save(recorded);
+    this.recordedUpdateTime = updateTime;
+
+    await this.state.save({ targets: recorded, updateTime });
   }
 
   private async restore(): Promise<void> {
@@ -137,7 +151,14 @@ export class GamingMode {
 
     await updateColorCustomizations(TargetColors.restore(getColorCustomizations(), this.originalTargets));
 
+    // Gaming mode was started again while the restore was being written. Keep the record: the
+    // animation is running once more, and these are still the values it has to put back.
+    if (Timer.getInstance().isRunning()) {
+      return;
+    }
+
     this.originalTargets = new Map();
+    this.recordedUpdateTime = 0;
     await this.state.clear();
   }
 

@@ -22,7 +22,7 @@ suite('GamingState', () => {
   test('loads nothing when nothing was saved', () => {
     const state = new GamingState(fakeMemento());
 
-    assert.deepEqual(state.load(), new Map());
+    assert.deepEqual(state.load(), { targets: new Map(), updateTime: 0 });
   });
 
   test('round trips the recorded values', async () => {
@@ -32,18 +32,18 @@ suite('GamingState', () => {
       ['panel.background', '#654321'],
     ]);
 
-    await new GamingState(memento).save(snapshot);
+    await new GamingState(memento).save({ targets: snapshot, updateTime: 50 });
 
     // A different instance, as after a restart
-    assert.deepEqual(new GamingState(memento).load(), snapshot);
+    assert.deepEqual(new GamingState(memento).load(), { targets: snapshot, updateTime: 50 });
   });
 
   test('round trips a target that was absent', async () => {
     const memento = fakeMemento();
     const snapshot = new Map<string, unknown>([['editor.background', undefined]]);
 
-    await new GamingState(memento).save(snapshot);
-    const loaded = new GamingState(memento).load();
+    await new GamingState(memento).save({ targets: snapshot, updateTime: 50 });
+    const loaded = new GamingState(memento).load().targets;
 
     // Absent has to survive as absent rather than as null, or the target would be restored to a
     // null value instead of being removed
@@ -56,19 +56,19 @@ suite('GamingState', () => {
     const memento = fakeMemento();
     const snapshot = new Map<string, unknown>([['[Default Dark+]', { 'editor.background': '#123456' }]]);
 
-    await new GamingState(memento).save(snapshot);
+    await new GamingState(memento).save({ targets: snapshot, updateTime: 50 });
 
-    assert.deepEqual(new GamingState(memento).load(), snapshot);
+    assert.deepEqual(new GamingState(memento).load().targets, snapshot);
   });
 
   test('loads nothing after clearing', async () => {
     const memento = fakeMemento();
     const state = new GamingState(memento);
 
-    await state.save(new Map([['editor.background', '#123456']]));
+    await state.save({ targets: new Map([['editor.background', '#123456']]), updateTime: 50 });
     await state.clear();
 
-    assert.deepEqual(new GamingState(memento).load(), new Map());
+    assert.deepEqual(new GamingState(memento).load(), { targets: new Map(), updateTime: 0 });
   });
 
   suite('when the stored value cannot be read back', () => {
@@ -80,21 +80,29 @@ suite('GamingState', () => {
       } as unknown as vscode.Memento);
     }
 
-    test('ignores a value that is not an array', () => {
-      assert.deepEqual(stateHolding({ 'editor.background': '#123456' }).load(), new Map());
+    test('ignores a value of the wrong shape', () => {
+      assert.deepEqual(stateHolding({ 'editor.background': '#123456' }).load(), {
+        targets: new Map(),
+        updateTime: 0,
+      });
     });
 
-    test('ignores entries without a target', () => {
-      assert.deepEqual(stateHolding([{ original: '#123456' }, null, 'editor.background']).load(), new Map());
+    test('ignores a record without an update time', () => {
+      const stored = { targets: [{ target: 'editor.background', original: '#123456' }] };
+
+      assert.deepEqual(stateHolding(stored).load(), { targets: new Map(), updateTime: 0 });
     });
 
     test('keeps the entries it can read', () => {
-      const loaded = stateHolding([
-        { target: 'editor.background', original: '#123456' },
-        { original: '#654321' },
-      ]).load();
+      const stored = {
+        targets: [{ target: 'editor.background', original: '#123456' }, { original: '#654321' }, null],
+        updateTime: 50,
+      };
 
-      assert.deepEqual(loaded, new Map([['editor.background', '#123456']]));
+      assert.deepEqual(stateHolding(stored).load(), {
+        targets: new Map([['editor.background', '#123456']]),
+        updateTime: 50,
+      });
     });
   });
 });

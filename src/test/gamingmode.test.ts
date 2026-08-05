@@ -34,7 +34,7 @@ suite('GamingMode', () => {
   }
 
   function savedTargets(): Map<string, unknown> {
-    return new GamingState(memento).load();
+    return new GamingState(memento).load().targets;
   }
 
   // Advances past the window restoreInterrupted watches the targets for
@@ -132,6 +132,28 @@ suite('GamingMode', () => {
       assert.deepEqual(customizations, { 'editor.background': '#123456' });
     });
 
+    test('keeps what another window recorded', async () => {
+      customizations = { 'editor.background': '#123456' };
+
+      // Two windows sharing the same globalState, both started up before gaming mode was ever
+      // used, so neither has anything recorded to begin with
+      const other = newGamingMode();
+      const mode = newGamingMode();
+
+      await other.start(new Config());
+      await clock.tickAsync(updateTime);
+      Timer.resetInstance();
+
+      // This window sees the gaming color, which must not be mistaken for the original
+      assert.notEqual(customizations?.['editor.background'], '#123456');
+      await mode.start(new Config());
+
+      assert.deepEqual(savedTargets(), new Map([['editor.background', '#123456']]));
+
+      await mode.reset();
+      assert.deepEqual(customizations, { 'editor.background': '#123456' });
+    });
+
     test('records a target added to the configuration while stopped', async () => {
       const mode = newGamingMode();
       customizations = { 'editor.background': '#123456', 'panel.background': '#654321' };
@@ -204,6 +226,44 @@ suite('GamingMode', () => {
       assert.equal(writes, 2);
       assert.equal(customizations, undefined);
     });
+
+    test('keeps what was recorded when gaming mode starts while the restore is being written', async () => {
+      const mode = newGamingMode();
+      customizations = { 'editor.background': '#123456' };
+
+      await mode.start(new Config());
+      await clock.tickAsync(updateTime);
+
+      // Hold the restore open, so that gaming mode can start while it is being written
+      let landRestore: (() => void) | undefined;
+      land = (value) => {
+        return new Promise<void>((resolve) => {
+          landRestore = () => {
+            customizations = value;
+            resolve();
+          };
+        });
+      };
+
+      const resetting = mode.reset();
+      await clock.tickAsync(0);
+
+      land = (value) => {
+        customizations = value;
+
+        return Promise.resolve();
+      };
+      await mode.start(new Config());
+
+      landRestore?.();
+      await resetting;
+
+      // The animation is running again, so the values it has to put back are still needed
+      assert.deepEqual(savedTargets(), new Map([['editor.background', '#123456']]));
+
+      await mode.reset();
+      assert.deepEqual(customizations, { 'editor.background': '#123456' });
+    });
   });
 
   suite('#restoreInterrupted', () => {
@@ -222,7 +282,7 @@ suite('GamingMode', () => {
       assert.notEqual(customizations?.['editor.background'], '#123456');
 
       // A new extension host, with only what was persisted to go on
-      const restoring = newGamingMode().restoreInterrupted(new Config());
+      const restoring = newGamingMode().restoreInterrupted();
       await observe();
       await restoring;
 
@@ -234,7 +294,7 @@ suite('GamingMode', () => {
       customizations = { 'panel.background': '#654321' };
       await interrupt();
 
-      const restoring = newGamingMode().restoreInterrupted(new Config());
+      const restoring = newGamingMode().restoreInterrupted();
       await observe();
       await restoring;
 
@@ -244,7 +304,7 @@ suite('GamingMode', () => {
     test('does nothing when nothing was recorded', async () => {
       customizations = { 'editor.background': '#123456' };
 
-      await newGamingMode().restoreInterrupted(new Config());
+      await newGamingMode().restoreInterrupted();
 
       assert.deepEqual(customizations, { 'editor.background': '#123456' });
     });
@@ -253,7 +313,7 @@ suite('GamingMode', () => {
       customizations = { 'editor.background': '#123456' };
       await interrupt();
 
-      const restoring = newGamingMode().restoreInterrupted(new Config());
+      const restoring = newGamingMode().restoreInterrupted();
 
       // The other window keeps writing while the targets are being watched
       customizations = { ...customizations, 'editor.background': '#abcdef' };
@@ -266,12 +326,33 @@ suite('GamingMode', () => {
       assert.deepEqual(savedTargets(), new Map([['editor.background', '#123456']]));
     });
 
+    test('watches for as long as the animation that recorded the colors needs', async () => {
+      // The window that was interrupted was animating far more slowly than this one is configured
+      // to, so watching for this window's update time would not see a single tick of it
+      updateTime = 2000;
+      customizations = { 'editor.background': '#123456' };
+      await interrupt();
+
+      updateTime = 50;
+      const restoring = newGamingMode().restoreInterrupted();
+
+      await clock.tickAsync(OBSERVATION_TIME);
+
+      // A tick of the slow animation, after this window's own update time would have run out
+      customizations = { ...customizations, 'editor.background': '#abcdef' };
+      await clock.tickAsync(3 * OBSERVATION_TIME);
+      await restoring;
+
+      assert.deepEqual(customizations, { 'editor.background': '#abcdef' });
+      assert.deepEqual(savedTargets(), new Map([['editor.background', '#123456']]));
+    });
+
     test('leaves the colors alone when gaming mode starts in this window', async () => {
       customizations = { 'editor.background': '#123456' };
       await interrupt();
 
       const mode = newGamingMode();
-      const restoring = mode.restoreInterrupted(new Config());
+      const restoring = mode.restoreInterrupted();
       await mode.start(new Config());
       await observe();
       await restoring;

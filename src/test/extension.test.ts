@@ -24,6 +24,12 @@ suite('Commands', () => {
     }
 
     await ext.activate();
+
+    // Activation kicks off a restore of whatever a previous run left in the real globalState,
+    // which would otherwise land in the middle of a test a second or so later. Clear it, and wait
+    // long enough for that restore to have given up on what it was watching.
+    await vscode.commands.executeCommand('vscode-gaming.reset');
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   });
 
   setup(() => {
