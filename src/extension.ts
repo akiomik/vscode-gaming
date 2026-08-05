@@ -1,83 +1,23 @@
 import * as vscode from 'vscode';
 
-import { ColorWheel } from './colorwheel';
 import { Config } from './config';
-import { type ColorCustomizations, TargetColors, type TargetSnapshot } from './targetcolors';
+import { GamingMode } from './gamingmode';
+import { GamingState } from './gamingstate';
 import { Timer } from './timer';
 
-const COLOR_CUSTOMIZATIONS = 'workbench.colorCustomizations';
-
-// `WorkspaceConfiguration` is a snapshot rather than a live view, so it is re-read on every access
-// to make sure customizations written after it was obtained are not dropped.
-function getColorCustomizations(): ColorCustomizations | undefined {
-  return vscode.workspace.getConfiguration().get<ColorCustomizations>(COLOR_CUSTOMIZATIONS);
-}
-
-function updateColorCustomizations(customizations: ColorCustomizations): Thenable<void> {
-  // Writing an empty object would leave a `"workbench.colorCustomizations": {}` block behind in
-  // settings.json. Passing undefined drops the entry instead.
-  const value = Object.keys(customizations).length > 0 ? customizations : undefined;
-
-  return vscode.workspace.getConfiguration().update(COLOR_CUSTOMIZATIONS, value, true);
-}
-
 export function activate(context: vscode.ExtensionContext) {
-  // The values the targets held before gaming mode overwrote them. Reset puts back these entries
-  // only, so customizations outside of `gaming.targets` are never touched.
-  let originalTargets: TargetSnapshot = new Map();
+  const gaming = new GamingMode(new GamingState(context.globalState));
 
-  // The write started by the most recent tick. Nothing awaits a tick, so it is tracked here for
-  // reset to wait on, and its failure is reported here rather than left as an unhandled rejection.
-  let pendingUpdate: Promise<void> = Promise.resolve();
-
-  function updateFromTick(customizations: ColorCustomizations): void {
-    pendingUpdate = Promise.resolve(updateColorCustomizations(customizations)).then(undefined, (error) => {
-      console.error('vscode-gaming: failed to update color customizations', error);
-    });
-  }
-
-  const startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => {
-    const config = new Config();
-
-    const delta = config.delta();
-    let shift = delta;
-
-    const timer = Timer.getInstance();
-    if (!timer.isRunning()) {
-      originalTargets = TargetColors.snapshot(getColorCustomizations(), config.targets);
-    }
-
-    // `config.targets` is captured here instead of being re-read on every tick, so that the targets
-    // the animation writes always match the ones recorded in `originalTargets`.
-    timer.start(() => {
-      const color = ColorWheel.at(shift);
-      updateFromTick(TargetColors.apply(getColorCustomizations(), config.targets, color.code()));
-
-      shift += delta;
-    }, config.updateTime);
+  // Runs on every startup, thanks to the `onStartupFinished` activation event, and does nothing
+  // unless the previous session left gaming colors behind. Not awaited: it watches the colors for
+  // a moment before deciding, and the commands have to be usable meanwhile.
+  gaming.restoreInterrupted(new Config()).catch((error) => {
+    console.error('vscode-gaming: failed to restore the colors of an interrupted session', error);
   });
 
-  const stopCmd = vscode.commands.registerCommand('vscode-gaming.stop', () => {
-    const timer = Timer.getInstance();
-    timer.stop();
-  });
-
-  const resetCmd = vscode.commands.registerCommand('vscode-gaming.reset', async () => {
-    const timer = Timer.getInstance();
-    timer.stop();
-
-    // Nothing was recorded, so there is nothing this extension is entitled to put back.
-    if (originalTargets.size === 0) {
-      return;
-    }
-
-    // Stopping the timer does not stop a tick that is already writing. Let it settle first,
-    // otherwise it could land after the restore and put a gaming color back.
-    await pendingUpdate;
-
-    await updateColorCustomizations(TargetColors.restore(getColorCustomizations(), originalTargets));
-    originalTargets = new Map();
-  });
+  const startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => gaming.start(new Config()));
+  const stopCmd = vscode.commands.registerCommand('vscode-gaming.stop', () => gaming.stop());
+  const resetCmd = vscode.commands.registerCommand('vscode-gaming.reset', () => gaming.reset());
 
   context.subscriptions.push(startCmd);
   context.subscriptions.push(stopCmd);
@@ -85,6 +25,8 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+  // The colors stay in the settings: a configuration update is not guaranteed to be written during
+  // shutdown, so putting them back is left to `restoreInterrupted` on the next activation.
   const timer = Timer.getInstance();
   timer.stop();
 }
