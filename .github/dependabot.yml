@@ -9,6 +9,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # `@types/vscode` is the API of the oldest VS Code the extension supports, which is what
+      # `engines.vscode` declares, so the two only ever move together. On its own an update makes
+      # the extension unpackageable, and would offer APIs that the supported VS Code has not got.
+      - dependency-name: "@types/vscode"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
