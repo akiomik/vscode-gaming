@@ -20,3 +20,19 @@ jobs:
       - run: npm ci
       - run: npm run lint:ci
       - run: npm run typecheck
+
+  # Packaging is what the release workflow does before it publishes, and it validates things the
+  # other jobs never look at, such as `engines.vscode` agreeing with the version of `@types/vscode`.
+  # Run it on every change, so that a release is not the place where such a mismatch turns up.
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run package
