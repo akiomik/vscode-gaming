@@ -1,6 +1,6 @@
 # vscode-gaming
 
-[![Visual Studio Marketplace Version (including pre-releases)](https://img.shields.io/visual-studio-marketplace/v/omi.vscode-gaming)](https://marketplace.visualstudio.com/items?itemName=omi.vscode-gaming)
+[![Version](https://img.shields.io/github/v/release/akiomik/vscode-gaming?sort=semver&label=version)](https://marketplace.visualstudio.com/items?itemName=omi.vscode-gaming)
 [![Node.js Test](https://github.com/akiomik/vscode-gaming/actions/workflows/test.yml/badge.svg)](https://github.com/akiomik/vscode-gaming/actions/workflows/test.yml)
 
 ![banner](images/github-banner.png)
