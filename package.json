@@ -92,6 +92,10 @@
     "lint:fix": "biome check --write .",
     "lint:ci": "biome ci ."
   },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.7"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.6",
     "@sinonjs/fake-timers": "^15.4.0",
