@@ -56,10 +56,17 @@ suite('Commands', function () {
 
     configStub = sinon.stub(vscode.workspace, 'getConfiguration').callsFake((section?: string) => {
       if (section === 'gaming') {
-        return {
+        const gaming: Record<string, unknown> = {
           period: 10000,
           updateTime: UPDATE_TIME,
           targets: ['editor.background'],
+        };
+
+        return {
+          get: <T>(key: string, defaultValue?: T) => (gaming[key] as T | undefined) ?? defaultValue,
+          update: () => Promise.resolve(),
+          has: (key: string) => key in gaming,
+          inspect: () => ({}),
         } as unknown as vscode.WorkspaceConfiguration;
       }
 
