@@ -1,6 +1,6 @@
 export class Timer {
-  private static instance?: Timer;
-  private _timer?: NodeJS.Timeout;
+  private static instance: Timer | undefined;
+  private _timer: NodeJS.Timeout | undefined;
 
   static getInstance() {
     if (!Timer.instance) {
