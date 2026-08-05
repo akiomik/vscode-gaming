@@ -1,10 +1,10 @@
 import * as assert from 'node:assert';
-import type { InstalledClock } from '@sinonjs/fake-timers';
+import type { Clock } from '@sinonjs/fake-timers';
 import * as FakeTimers from '@sinonjs/fake-timers';
 import { Timer } from '../timer';
 
 suite('Timer', () => {
-  let clock: InstalledClock;
+  let clock: Clock;
   let a = 0;
 
   suiteSetup(() => {

@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type { InstalledClock } from '@sinonjs/fake-timers';
+import type { Clock } from '@sinonjs/fake-timers';
 import * as FakeTimers from '@sinonjs/fake-timers';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
@@ -13,7 +13,7 @@ import { Timer } from '../timer';
 const OBSERVATION_TIME = 1000;
 
 suite('GamingMode', () => {
-  let clock: InstalledClock;
+  let clock: Clock;
   let configStub: sinon.SinonStub;
 
   // Mock workbench.colorCustomizations storage, and how a write to it lands. Tests that care about
