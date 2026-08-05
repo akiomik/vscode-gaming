@@ -84,6 +84,7 @@
     "publish": "vsce publish",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "typecheck": "tsc --noEmit -p ./",
     "pretest": "npm run compile",
     "test": "vscode-test",
     "format": "biome format --write .",
