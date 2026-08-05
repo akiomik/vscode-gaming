@@ -14,13 +14,27 @@ function getColorCustomizations(): ColorCustomizations | undefined {
 }
 
 function updateColorCustomizations(customizations: ColorCustomizations): Thenable<void> {
-  return vscode.workspace.getConfiguration().update(COLOR_CUSTOMIZATIONS, customizations, true);
+  // Writing an empty object would leave a `"workbench.colorCustomizations": {}` block behind in
+  // settings.json. Passing undefined drops the entry instead.
+  const value = Object.keys(customizations).length > 0 ? customizations : undefined;
+
+  return vscode.workspace.getConfiguration().update(COLOR_CUSTOMIZATIONS, value, true);
 }
 
 export function activate(context: vscode.ExtensionContext) {
   // The values the targets held before gaming mode overwrote them. Reset puts back these entries
   // only, so customizations outside of `gaming.targets` are never touched.
   let originalTargets: TargetSnapshot = new Map();
+
+  // The write started by the most recent tick. Nothing awaits a tick, so it is tracked here for
+  // reset to wait on, and its failure is reported here rather than left as an unhandled rejection.
+  let pendingUpdate: Promise<void> = Promise.resolve();
+
+  function updateFromTick(customizations: ColorCustomizations): void {
+    pendingUpdate = Promise.resolve(updateColorCustomizations(customizations)).then(undefined, (error) => {
+      console.error('vscode-gaming: failed to update color customizations', error);
+    });
+  }
 
   const startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => {
     const config = new Config();
@@ -37,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
     // the animation writes always match the ones recorded in `originalTargets`.
     timer.start(() => {
       const color = ColorWheel.at(shift);
-      updateColorCustomizations(TargetColors.apply(getColorCustomizations(), config.targets, color.code()));
+      updateFromTick(TargetColors.apply(getColorCustomizations(), config.targets, color.code()));
 
       shift += delta;
     }, config.updateTime);
@@ -56,6 +70,10 @@ export function activate(context: vscode.ExtensionContext) {
     if (originalTargets.size === 0) {
       return;
     }
+
+    // Stopping the timer does not stop a tick that is already writing. Let it settle first,
+    // otherwise it could land after the restore and put a gaming color back.
+    await pendingUpdate;
 
     await updateColorCustomizations(TargetColors.restore(getColorCustomizations(), originalTargets));
     originalTargets = new Map();

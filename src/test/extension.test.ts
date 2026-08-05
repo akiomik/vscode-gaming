@@ -31,6 +31,34 @@ suite('Commands', () => {
     inspect: sinon.stub().returns({}),
   };
 
+  // Mock gaming configuration with default values
+  const mockGamingConfig: vscode.WorkspaceConfiguration = {
+    period: 10000,
+    updateTime: 50,
+    targets: ['editor.background'],
+    has: sinon.stub().returns(true),
+    inspect: sinon.stub().returns({}),
+    get: sinon.stub().callsFake((key: string) => {
+      if (key === 'period') return 10000;
+      if (key === 'updateTime') return 50;
+      if (key === 'targets') return ['editor.background'];
+
+      return undefined;
+    }),
+    update: sinon.stub().returns(Promise.resolve()),
+  };
+
+  // Stub getConfiguration to return the appropriate mock based on section
+  function stubGetConfiguration(configuration: vscode.WorkspaceConfiguration): sinon.SinonStub {
+    return sinon.stub(vscode.workspace, 'getConfiguration').callsFake((section?: string) => {
+      if (section === 'gaming') {
+        return mockGamingConfig;
+      }
+
+      return configuration;
+    });
+  }
+
   suiteSetup(async () => {
     clock = FakeTimers.install({ shouldClearNativeTimers: true });
 
@@ -51,44 +79,25 @@ suite('Commands', () => {
     // Mock workbench.colorCustomizations storage
     mockWorkbenchColorCustomizations = {};
 
-    // Mock gaming configuration with default values
-    const mockGamingConfig: vscode.WorkspaceConfiguration = {
-      period: 10000,
-      updateTime: 50,
-      targets: ['editor.background'],
-      has: sinon.stub().returns(true),
-      inspect: sinon.stub().returns({}),
-      get: sinon.stub().callsFake((key: string) => {
-        if (key === 'period') return 10000;
-        if (key === 'updateTime') return 50;
-        if (key === 'targets') return ['editor.background'];
-
-        return undefined;
-      }),
-      update: sinon.stub().returns(Promise.resolve()),
-    };
-
-    // Stub getConfiguration to return appropriate mock based on section
-    configStub = sinon.stub(vscode.workspace, 'getConfiguration').callsFake((section?: string) => {
-      if (section === 'gaming') {
-        return mockGamingConfig;
-      }
-
-      return mockConfiguration;
-    });
+    configStub = stubGetConfiguration(mockConfiguration);
   });
 
   teardown(async () => {
-    // Drop the snapshot the extension holds between commands, so that tests do not depend on
-    // whether the preceding one happened to end with a reset. Runs while the configuration is
-    // still stubbed, to keep it away from the real settings.
-    await vscode.commands.executeCommand('vscode-gaming.reset');
+    try {
+      // Drop the snapshot the extension holds between commands, so that tests do not depend on
+      // whether the preceding one happened to end with a reset. Runs while the configuration is
+      // still stubbed, to keep it away from the real settings.
+      await vscode.commands.executeCommand('vscode-gaming.reset');
+    } finally {
+      // Restore even if the reset above failed, so that one broken test does not leave every
+      // later one failing on an already wrapped getConfiguration
 
-    // Reset timer instance to ensure clean state between tests
-    Timer.resetInstance();
+      // Reset timer instance to ensure clean state between tests
+      Timer.resetInstance();
 
-    // Restore all stubs
-    configStub.restore();
+      // Restore all stubs
+      configStub.restore();
+    }
   });
 
   test('vscode-gaming.start', async () => {
@@ -135,9 +144,67 @@ suite('Commands', () => {
     // Execute reset command
     await vscode.commands.executeCommand('vscode-gaming.reset');
 
-    // Verify state after reset
+    // Verify state after reset. There was nothing to customize to begin with, so the setting is
+    // dropped rather than left behind as an empty block
     assert.equal(timer.isRunning(), false);
-    assert.deepEqual(mockWorkbenchColorCustomizations, {});
+    assert.equal(mockWorkbenchColorCustomizations, undefined);
+  });
+
+  test('vscode-gaming.reset waits for the write started by the animation', async () => {
+    let updateCount = 0;
+    let landAnimationUpdate: (() => void) | undefined;
+
+    // Swap in a configuration that holds the first write open, so that the write started by the
+    // animation is still in flight once reset runs
+    const heldConfiguration: vscode.WorkspaceConfiguration = {
+      ...mockConfiguration,
+      update: sinon.stub().callsFake((key: string, value: Record<string, string>) => {
+        updateCount += 1;
+        const land = () => {
+          if (key === 'workbench.colorCustomizations') {
+            mockWorkbenchColorCustomizations = value;
+          }
+        };
+
+        if (updateCount > 1) {
+          land();
+          return Promise.resolve();
+        }
+
+        return new Promise<void>((resolve) => {
+          landAnimationUpdate = () => {
+            land();
+            resolve();
+          };
+        });
+      }),
+    };
+
+    configStub.restore();
+    configStub = stubGetConfiguration(heldConfiguration);
+
+    try {
+      await vscode.commands.executeCommand('vscode-gaming.start');
+      clock.tick(50);
+
+      assert.equal(updateCount, 1);
+
+      const reset = vscode.commands.executeCommand('vscode-gaming.reset');
+      await Promise.resolve();
+
+      // Reset has not written anything on top of the in-flight write yet
+      assert.equal(updateCount, 1);
+
+      landAnimationUpdate?.();
+      await reset;
+
+      // The restore is the write that lands last
+      assert.equal(updateCount, 2);
+      assert.equal(mockWorkbenchColorCustomizations, undefined);
+    } finally {
+      // Never leave the held write pending, or teardown would wait on it forever
+      landAnimationUpdate?.();
+    }
   });
 
   test('vscode-gaming.start keeps customizations that are not targets', async () => {
