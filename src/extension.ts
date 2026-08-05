@@ -2,13 +2,27 @@ import * as vscode from 'vscode';
 
 import { ColorWheel } from './colorwheel';
 import { Config } from './config';
+import { type ColorCustomizations, TargetColors, type TargetSnapshot } from './targetcolors';
 import { Timer } from './timer';
 
+const COLOR_CUSTOMIZATIONS = 'workbench.colorCustomizations';
+
+// `WorkspaceConfiguration` is a snapshot rather than a live view, so it is re-read on every access
+// to make sure customizations written after it was obtained are not dropped.
+function getColorCustomizations(): ColorCustomizations | undefined {
+  return vscode.workspace.getConfiguration().get<ColorCustomizations>(COLOR_CUSTOMIZATIONS);
+}
+
+function updateColorCustomizations(customizations: ColorCustomizations): Thenable<void> {
+  return vscode.workspace.getConfiguration().update(COLOR_CUSTOMIZATIONS, customizations, true);
+}
+
 export function activate(context: vscode.ExtensionContext) {
-  let originalCustomizations = vscode.workspace.getConfiguration().get('workbench.colorCustomizations');
+  // The values the targets held before gaming mode overwrote them. Reset puts back these entries
+  // only, so customizations outside of `gaming.targets` are never touched.
+  let originalTargets: TargetSnapshot = new Map();
 
   const startCmd = vscode.commands.registerCommand('vscode-gaming.start', () => {
-    const globalConfig = vscode.workspace.getConfiguration();
     const config = new Config();
 
     const delta = config.delta();
@@ -16,14 +30,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     const timer = Timer.getInstance();
     if (!timer.isRunning()) {
-      originalCustomizations = globalConfig.get('workbench.colorCustomizations');
+      originalTargets = TargetColors.snapshot(getColorCustomizations(), config.targets);
     }
 
+    // `config.targets` is captured here instead of being re-read on every tick, so that the targets
+    // the animation writes always match the ones recorded in `originalTargets`.
     timer.start(() => {
       const color = ColorWheel.at(shift);
-      const entries = config.targets.map((target) => [target, color.code()]);
-      const customizations = Object.fromEntries(entries);
-      globalConfig.update('workbench.colorCustomizations', customizations, true);
+      updateColorCustomizations(TargetColors.apply(getColorCustomizations(), config.targets, color.code()));
 
       shift += delta;
     }, config.updateTime);
@@ -34,12 +48,17 @@ export function activate(context: vscode.ExtensionContext) {
     timer.stop();
   });
 
-  const resetCmd = vscode.commands.registerCommand('vscode-gaming.reset', () => {
+  const resetCmd = vscode.commands.registerCommand('vscode-gaming.reset', async () => {
     const timer = Timer.getInstance();
     timer.stop();
 
-    const globalConfig = vscode.workspace.getConfiguration();
-    globalConfig.update('workbench.colorCustomizations', originalCustomizations, true);
+    // Nothing was recorded, so there is nothing this extension is entitled to put back.
+    if (originalTargets.size === 0) {
+      return;
+    }
+
+    await updateColorCustomizations(TargetColors.restore(getColorCustomizations(), originalTargets));
+    originalTargets = new Map();
   });
 
   context.subscriptions.push(startCmd);

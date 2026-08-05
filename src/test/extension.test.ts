@@ -78,7 +78,12 @@ suite('Commands', () => {
     });
   });
 
-  teardown(() => {
+  teardown(async () => {
+    // Drop the snapshot the extension holds between commands, so that tests do not depend on
+    // whether the preceding one happened to end with a reset. Runs while the configuration is
+    // still stubbed, to keep it away from the real settings.
+    await vscode.commands.executeCommand('vscode-gaming.reset');
+
     // Reset timer instance to ensure clean state between tests
     Timer.resetInstance();
 
@@ -133,6 +138,62 @@ suite('Commands', () => {
     // Verify state after reset
     assert.equal(timer.isRunning(), false);
     assert.deepEqual(mockWorkbenchColorCustomizations, {});
+  });
+
+  test('vscode-gaming.start keeps customizations that are not targets', async () => {
+    // Set initial customizations
+    mockWorkbenchColorCustomizations = { 'panel.background': '#123456', 'statusBar.background': '#654321' };
+
+    // Start gaming mode
+    await vscode.commands.executeCommand('vscode-gaming.start');
+    clock.tick(50);
+
+    // Only the target is overwritten, while gaming mode is still running
+    assert.ok(mockWorkbenchColorCustomizations['editor.background']);
+    assert.equal(mockWorkbenchColorCustomizations['panel.background'], '#123456');
+    assert.equal(mockWorkbenchColorCustomizations['statusBar.background'], '#654321');
+  });
+
+  test('vscode-gaming.reset restores the previous value of a target', async () => {
+    // Set initial customizations
+    const originalCustomizations = { 'editor.background': '#123456' };
+    mockWorkbenchColorCustomizations = originalCustomizations;
+
+    // Start gaming mode
+    await vscode.commands.executeCommand('vscode-gaming.start');
+    clock.tick(50);
+
+    assert.notEqual(mockWorkbenchColorCustomizations['editor.background'], '#123456');
+
+    // Reset should restore the value the target had before
+    await vscode.commands.executeCommand('vscode-gaming.reset');
+
+    assert.deepEqual(mockWorkbenchColorCustomizations, originalCustomizations);
+  });
+
+  test('vscode-gaming.reset keeps customizations changed while gaming mode was running', async () => {
+    // Start gaming mode
+    await vscode.commands.executeCommand('vscode-gaming.start');
+    clock.tick(50);
+
+    // The user edits an unrelated customization while gaming mode is running
+    mockWorkbenchColorCustomizations = { ...mockWorkbenchColorCustomizations, 'panel.background': '#123456' };
+
+    // Reset should leave that edit alone
+    await vscode.commands.executeCommand('vscode-gaming.reset');
+
+    assert.deepEqual(mockWorkbenchColorCustomizations, { 'panel.background': '#123456' });
+  });
+
+  test('vscode-gaming.reset without gaming mode leaves customizations alone', async () => {
+    // Set initial customizations, including one that happens to be a target
+    const originalCustomizations = { 'editor.background': '#123456', 'panel.background': '#654321' };
+    mockWorkbenchColorCustomizations = originalCustomizations;
+
+    // Reset without ever having started gaming mode
+    await vscode.commands.executeCommand('vscode-gaming.reset');
+
+    assert.deepEqual(mockWorkbenchColorCustomizations, originalCustomizations);
   });
 
   test('vscode-gaming.start preserves original customizations', async () => {
