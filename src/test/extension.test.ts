@@ -11,7 +11,7 @@ suite('Commands', () => {
   let configStub: sinon.SinonStub;
 
   // Mock configuration
-  let mockWorkbenchColorCustomizations: Record<string, string>;
+  let mockWorkbenchColorCustomizations: Record<string, string> | undefined;
   const mockConfiguration: vscode.WorkspaceConfiguration = {
     get: sinon.stub().callsFake((key: string) => {
       if (key === 'workbench.colorCustomizations') {
@@ -20,7 +20,7 @@ suite('Commands', () => {
 
       return undefined;
     }),
-    update: sinon.stub().callsFake((key: string, value: Record<string, string>) => {
+    update: sinon.stub().callsFake((key: string, value: Record<string, string> | undefined) => {
       if (key === 'workbench.colorCustomizations') {
         mockWorkbenchColorCustomizations = value;
       }
@@ -114,7 +114,7 @@ suite('Commands', () => {
     // Verify state after start
     assert.equal(timer.isRunning(), true);
     assert.notDeepEqual(mockWorkbenchColorCustomizations, {});
-    assert.ok(mockWorkbenchColorCustomizations['editor.background']);
+    assert.ok(mockWorkbenchColorCustomizations?.['editor.background']);
   });
 
   test('vscode-gaming.stop', async () => {
@@ -158,7 +158,7 @@ suite('Commands', () => {
     // animation is still in flight once reset runs
     const heldConfiguration: vscode.WorkspaceConfiguration = {
       ...mockConfiguration,
-      update: sinon.stub().callsFake((key: string, value: Record<string, string>) => {
+      update: sinon.stub().callsFake((key: string, value: Record<string, string> | undefined) => {
         updateCount += 1;
         const land = () => {
           if (key === 'workbench.colorCustomizations') {
@@ -216,9 +216,9 @@ suite('Commands', () => {
     clock.tick(50);
 
     // Only the target is overwritten, while gaming mode is still running
-    assert.ok(mockWorkbenchColorCustomizations['editor.background']);
-    assert.equal(mockWorkbenchColorCustomizations['panel.background'], '#123456');
-    assert.equal(mockWorkbenchColorCustomizations['statusBar.background'], '#654321');
+    assert.ok(mockWorkbenchColorCustomizations?.['editor.background']);
+    assert.equal(mockWorkbenchColorCustomizations?.['panel.background'], '#123456');
+    assert.equal(mockWorkbenchColorCustomizations?.['statusBar.background'], '#654321');
   });
 
   test('vscode-gaming.reset restores the previous value of a target', async () => {
@@ -230,7 +230,7 @@ suite('Commands', () => {
     await vscode.commands.executeCommand('vscode-gaming.start');
     clock.tick(50);
 
-    assert.notEqual(mockWorkbenchColorCustomizations['editor.background'], '#123456');
+    assert.notEqual(mockWorkbenchColorCustomizations?.['editor.background'], '#123456');
 
     // Reset should restore the value the target had before
     await vscode.commands.executeCommand('vscode-gaming.reset');
