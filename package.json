@@ -104,6 +104,6 @@
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.9.2",
     "sinon": "^21.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^7.0.2"
   }
 }
