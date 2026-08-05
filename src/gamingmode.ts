@@ -127,16 +127,25 @@ export class GamingMode {
     // Prefer what is stored over what this window has in memory: another window may have recorded
     // the original values already, in which case what this window can see now is whatever that
     // window's animation has written since.
+    //
+    // Targets another window recorded are kept even when they are not in this window's
+    // `gaming.targets`. `workbench.colorCustomizations` is a global setting, so its gaming colors
+    // are visible everywhere, and a reset is expected to undo all of them rather than only the
+    // ones this workspace happens to be configured for.
     const recorded = TargetColors.record(
       new Map([...this.originalTargets, ...stored.targets]),
       getColorCustomizations(),
       targets,
     );
 
-    this.originalTargets = recorded;
-    this.recordedUpdateTime = updateTime;
+    // Whoever watches these colors has to allow for the slowest animation that could be running,
+    // and another window may still be animating them at its own update time.
+    const slowestUpdateTime = Math.max(stored.updateTime, updateTime);
 
-    await this.state.save({ targets: recorded, updateTime });
+    this.originalTargets = recorded;
+    this.recordedUpdateTime = slowestUpdateTime;
+
+    await this.state.save({ targets: recorded, updateTime: slowestUpdateTime });
   }
 
   private async restore(): Promise<void> {

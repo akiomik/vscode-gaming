@@ -8,9 +8,10 @@ const STATE_KEY = 'vscode-gaming.originalTargets';
 export type GamingRecord = {
   targets: TargetSnapshot;
 
-  // The update time of the session that recorded these. Every window shares this record, so a
-  // window deciding whether anyone is still animating has to watch for a tick of the animation
-  // that is running, which need not use the `gaming.updateTime` configured for this window.
+  // The longest update time of any session that has contributed to this record. Every window
+  // shares it, so a window deciding whether anyone is still animating has to watch for a tick of
+  // the slowest animation that could be running, which need not be running at the
+  // `gaming.updateTime` configured for this window.
   updateTime: number;
 };
 
@@ -32,12 +33,14 @@ function isStoredEntry(value: unknown): value is StoredEntry {
 }
 
 function isStoredRecord(value: unknown): value is StoredRecord {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    Array.isArray((value as StoredRecord).targets) &&
-    typeof (value as StoredRecord).updateTime === 'number'
-  );
+  if (typeof value !== 'object' || value === null || !Array.isArray((value as StoredRecord).targets)) {
+    return false;
+  }
+
+  // A NaN would survive into the time the colors are watched for and make it elapse immediately
+  const { updateTime } = value as StoredRecord;
+
+  return Number.isFinite(updateTime) && updateTime >= 0;
 }
 
 // The values gaming mode has to put back, kept somewhere that outlives the extension host.

@@ -154,6 +154,23 @@ suite('GamingMode', () => {
       assert.deepEqual(customizations, { 'editor.background': '#123456' });
     });
 
+    test('keeps the slowest update time of the windows sharing the record', async () => {
+      // A window animating slowly, and a faster one that has not started gaming mode yet
+      updateTime = 2000;
+      const slow = newGamingMode();
+      const fast = newGamingMode();
+
+      await slow.start(new Config());
+      await clock.tickAsync(updateTime);
+      Timer.resetInstance();
+
+      updateTime = 50;
+      await fast.start(new Config());
+
+      // Whoever watches these colors still has to allow for the slow animation
+      assert.equal(new GamingState(memento).load().updateTime, 2000);
+    });
+
     test('records a target added to the configuration while stopped', async () => {
       const mode = newGamingMode();
       customizations = { 'editor.background': '#123456', 'panel.background': '#654321' };

@@ -93,6 +93,15 @@ suite('GamingState', () => {
       assert.deepEqual(stateHolding(stored).load(), { targets: new Map(), updateTime: 0 });
     });
 
+    test('ignores an update time that is not a usable number', () => {
+      const targets = [{ target: 'editor.background', original: '#123456' }];
+
+      // A NaN would survive into the time the colors are watched for and make it elapse at once
+      for (const updateTime of [Number.NaN, Number.POSITIVE_INFINITY, -1]) {
+        assert.deepEqual(stateHolding({ targets, updateTime }).load(), { targets: new Map(), updateTime: 0 });
+      }
+    });
+
     test('keeps the entries it can read', () => {
       const stored = {
         targets: [{ target: 'editor.background', original: '#123456' }, { original: '#654321' }, null],
