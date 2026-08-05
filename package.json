@@ -29,7 +29,9 @@
     "Themes",
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "sponsor": {
     "url": "https://github.com/sponsors/akiomik"
   },

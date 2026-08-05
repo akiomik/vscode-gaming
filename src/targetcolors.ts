@@ -26,9 +26,24 @@ export class TargetColors {
     return { ...customizations, ...overrides };
   }
 
-  // Records the values the targets currently hold, so that `restore` can put them back.
-  public static snapshot(customizations: ColorCustomizations | undefined, targets: string[]): TargetSnapshot {
-    return new Map(targets.map((target) => [target, customizations?.[target]]));
+  // Returns `snapshot` extended with the values the targets currently hold, so that `restore` can
+  // put them back. Targets that `snapshot` already covers keep their recorded value: once gaming
+  // mode has run, the customizations hold gaming colors, and re-reading them would record those
+  // instead of the values the user started with.
+  public static record(
+    snapshot: TargetSnapshot,
+    customizations: ColorCustomizations | undefined,
+    targets: string[],
+  ): TargetSnapshot {
+    const recorded: TargetSnapshot = new Map(snapshot);
+
+    for (const target of targets) {
+      if (!recorded.has(target)) {
+        recorded.set(target, customizations?.[target]);
+      }
+    }
+
+    return recorded;
   }
 
   // Returns a copy of `customizations` with the snapshotted targets put back. Targets that were

@@ -8,6 +8,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 * Fixed gaming mode overwriting color customizations outside of `gaming.targets`
 * Fixed reset changing `workbench.colorCustomizations` when gaming mode had never been started
+* Fixed the original colors being unrecoverable after quitting VS Code with gaming mode running
+* The original colors are now put back automatically on the next startup
+* Fixed reset restoring a gaming color after gaming mode had been stopped and started again
 
 ## 0.1.0
 
