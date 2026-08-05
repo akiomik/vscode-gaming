@@ -1,16 +1,35 @@
 {
   "compilerOptions": {
-    "module": "Node16",
+    /* Language and environment: the extension host of VS Code ^1.85.0 runs on Node.js 18 */
     "target": "ES2022",
-    "outDir": "out",
     "lib": ["ES2022"],
-    "types": ["node", "mocha"] /* TypeScript 7 no longer includes every @types package automatically */,
-    "sourceMap": true,
+
+    /* Modules: the extension host loads `main` as CommonJS, which is what `Node16` emits here */
+    "module": "Node16",
     "rootDir": "src",
-    "strict": true /* enable all strict type-checking options */
-    /* Additional Checks */
-    // "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
-    // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
-    // "noUnusedParameters": true,  /* Report errors on unused parameters. */
-  }
+    "types": ["node", "mocha"] /* TypeScript 7 no longer includes every @types package automatically */,
+
+    /* Emit */
+    "outDir": "out",
+    "sourceMap": true,
+    "noEmitOnError": true /* Keep a failed compile from leaving half-updated output in `out` */,
+
+    /* Type checking */
+    "strict": true /* enable all strict type-checking options */,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+
+    /* Interop constraints */
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true /* Keep to syntax that a type-stripping runtime can also run */
+  },
+  "include": ["src"]
 }
