@@ -7,7 +7,13 @@ import { Timer } from '../timer';
 // What each command does is covered by the GamingMode tests. These check that the commands are
 // registered and wired to it, against the real extension host, so they run on real timers: the
 // commands write to the real globalState, which fake timers would keep from ever settling.
-suite('Commands', () => {
+suite('Commands', function () {
+  // Every command here waits on the real globalState, which VS Code flushes to disk on its own
+  // schedule, so a step that usually takes milliseconds can occasionally take seconds. The mocha
+  // default leaves no room for that, and none of these tests are meant to assert how long anything
+  // takes, so allow far more than they should ever need.
+  this.timeout(30000);
+
   let configStub: sinon.SinonStub;
   let customizations: Record<string, unknown> | undefined;
 
