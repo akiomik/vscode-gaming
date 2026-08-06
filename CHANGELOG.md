@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Gaming mode no longer overwrites color customizations outside of `gaming.targets`
 - Reset no longer changes `workbench.colorCustomizations` when gaming mode has never been started
-- The original colors are no longer unrecoverable after quitting VS Code with gaming mode running
 - Reset no longer restores a gaming color after gaming mode has been stopped and started again
 
 ## [0.1.0] - 2023-12-26
