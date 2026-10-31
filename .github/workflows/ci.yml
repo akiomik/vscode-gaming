@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   check:
@@ -15,8 +15,8 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version-file: '.node-version'
-          cache: 'npm'
+          node-version-file: ".node-version"
+          cache: "npm"
       - run: npm ci
       - run: npm run lint:ci
       - run: npm run typecheck
@@ -32,7 +32,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version-file: '.node-version'
-          cache: 'npm'
+          node-version-file: ".node-version"
+          cache: "npm"
       - run: npm ci
       - run: npm run package
