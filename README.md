@@ -14,17 +14,17 @@ Port of [gaming.vim](https://github.com/high-moctane/gaming.vim).
 
 ## Commands
 
-* `Start gaming mode`: Start gradient animation
-* `Stop gaming mode`: Stop gradient animation
-* `Reset gaming mode`: Reset color configuration
+- `Start gaming mode`: Start gradient animation
+- `Stop gaming mode`: Stop gradient animation
+- `Reset gaming mode`: Reset color configuration
 
 ## Extension Settings
 
 This extension contributes the following settings:
 
-* `gaming.period`: The gradient color cycle in milliseconds (defaults: `10000`)
-* `gaming.updateTime`: The updating interval in milliseconds (defaults: `50`)
-* `gaming.targets`: The colorization targets in [`workbench.colorCustomizations` namespace](https://code.visualstudio.com/api/references/theme-color) (defaults: `["editor.background"]`)
+- `gaming.period`: The gradient color cycle in milliseconds (defaults: `10000`)
+- `gaming.updateTime`: The updating interval in milliseconds (defaults: `50`)
+- `gaming.targets`: The colorization targets in [`workbench.colorCustomizations` namespace](https://code.visualstudio.com/api/references/theme-color) (defaults: `["editor.background"]`)
 
 ## Release Notes
 
