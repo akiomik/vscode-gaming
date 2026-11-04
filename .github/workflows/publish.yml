@@ -17,10 +17,12 @@ jobs:
         with:
           persist-credentials: false
       # No cache: one saved by another run could carry a poisoned dependency
-      # into the released package.
+      # into the released package. setup-node turns one on by itself once
+      # package.json names npm as its package manager, so say so explicitly.
       - uses: actions/setup-node@v7.1.0
         with:
           node-version-file: ".node-version"
+          package-manager-cache: false
       - name: Check that the tag matches the package version
         run: |
           version="$(jq -r .version package.json)"
@@ -54,6 +56,7 @@ jobs:
       - uses: actions/setup-node@v7.1.0
         with:
           node-version-file: ".node-version"
+          package-manager-cache: false
       - run: npm ci --ignore-scripts
       - uses: actions/download-artifact@v8.0.2
         with:
