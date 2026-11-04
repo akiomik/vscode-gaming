@@ -2,16 +2,81 @@ name: Publish Package to Visual Studio Marketplace
 on:
   release:
     types: [published]
+permissions: {}
 jobs:
-  publish:
+  # Packages the extension. `npm ci` runs the install scripts of every
+  # dependency and `vsce package` runs `vscode:prepublish`, so this job can
+  # only read the repository and never sees VSCE_PAT. The publish job uploads
+  # what it packages.
+  package:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # No cache: one saved by another run could carry a poisoned dependency
+      # into the released package. setup-node turns one on by itself once
+      # package.json names npm as its package manager, so say so explicitly.
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version-file: ".node-version"
-          cache: npm
+          package-manager-cache: false
+      - name: Check that the tag matches the package version
+        run: |
+          version="$(jq -r .version package.json)"
+          if [ "$GITHUB_REF_NAME" != "v${version}" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match package version ${version}" >&2
+            exit 1
+          fi
       - run: npm ci
-      - run: npm run publish
+      - run: npm run package -- --out "vscode-gaming-${GITHUB_REF_NAME#v}.vsix"
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: vsix
+          path: vscode-gaming-*.vsix
+          if-no-files-found: error
+          # Long enough to re-run the publish job after a failed upload.
+          retention-days: 7
+
+  # Publishes the packaged extension. VSCE_PAT is a long-lived token that any
+  # step in this job could read, so the job builds nothing and runs no install
+  # script: it installs the locked dependencies with `--ignore-scripts` only to
+  # get the locked vsce, and runs nothing but vsce on the downloaded package.
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: ".node-version"
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: vsix
+          path: dist
+      # The package job names the file and writes its manifest, so check both
+      # against the tag before publishing it.
+      - name: Check the package
+        run: |
+          vsix="vscode-gaming-${GITHUB_REF_NAME#v}.vsix"
+          found="$(cd dist && printf '%s\n' *)"
+          if [ "$found" != "$vsix" ]; then
+            echo "expected only ${vsix} for ${GITHUB_REF_NAME}, found: ${found}" >&2
+            exit 1
+          fi
+          identity="$(unzip -p "dist/${vsix}" extension/package.json | jq -r '"\(.publisher).\(.name)@\(.version)"')"
+          if [ "$identity" != "omi.vscode-gaming@${GITHUB_REF_NAME#v}" ]; then
+            echo "dist/${vsix} is ${identity}, not omi.vscode-gaming@${GITHUB_REF_NAME#v}" >&2
+            exit 1
+          fi
+      - run: node_modules/.bin/vsce publish --packagePath "dist/vscode-gaming-${GITHUB_REF_NAME#v}.vsix"
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
