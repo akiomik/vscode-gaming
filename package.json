@@ -98,7 +98,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",
-    "@sinonjs/fake-timers": "^15.4.0",
+    "@sinonjs/fake-timers": "^15.5.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "26.x",
     "@types/sinon": "^22.0.2",
